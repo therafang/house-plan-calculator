@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>垂直房置换方案计算模拟器</title>
+    <style>
+/* 原逻辑样式必须保留 */
+.hidden { display: none; }
+.red { color: #e53935; }
+.green { color: #388e3c; }
+.warning { color: #d32f2f; font-size: 0.85em; margin-left: 8px; }
+
+/* 美化样式 */
+body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f6f9;
+}
+.container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+h2 {
+    font-size: 1.6em;
+    color: #2c3e50;
+    border-left: 6px solid #4CAF50;
+    padding-left: 12px;
+    margin-top: 20px;
+}
+.input-group {
+    margin: 16px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.input-group label {
+    min-width: 140px;
+    font-weight: 600;
+    color: #333;
+}
+.input-group input,
+.input-group select {
+    flex-grow: 1;
+    padding: 10px 14px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    margin-top: 5px;
+}
+.submit-btn {
+    display: inline-block;
+    margin-top: 20px;
+    background: linear-gradient(to right, #4CAF50, #66bb6a);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 26px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+.submit-btn:hover {
+    background: linear-gradient(to right, #43a047, #4CAF50);
+}
+.output-box {
+    background-color: #f0f7f4;
+    border-left: 6px solid #4CAF50;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+    font-size: 15px;
+}
+.scheme-option {
+    background-color: #f9fdfc;
+    border: 1px solid #cde4dd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+}
+.scheme-option h4 {
+    margin-top: 0;
+    color: #2e7d32;
+}
+.step-section {
+    margin-bottom: 40px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed #ccc;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <!-- 第一步：家庭类型 -->
+        <div class="step-section">
+            <h2>第一步：选择家庭类型</h2>
+            <div class="input-group">
+                <label for="familyType">家庭类型：</label>
+                <select id="familyType" onchange="updateInputFields()">
+                    <option value="">请选择</option>
+                    <option value="villager">均为村民</option>
+                    <option value="mixed">半边户</option>
+                    <option value="resident">全居户</option>
+                </select>
+            </div>
+
+            <!-- 村民输入 -->
+            <div id="villagerInput" class="hidden">
+                <h3>家庭信息（均为村民）</h3>
+                <div class="input-group">
+                    <label for="villagerN">家庭人口数：</label>
+                    <input type="number" id="villagerN" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label for="villagerM">增计人数：</label>
+                    <input type="number" id="villagerM" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label for="villagerS">合法住宅建筑占地面积：</label>
+                    <input type="number" id="villagerS" min="0" value="0">
+                    <span class="warning">（如超过140㎡按140㎡计算）</span>
+                </div>
+            </div>
+
+            <!-- 混合输入 -->
+            <div id="mixedInput" class="hidden">
+                <h3>家庭信息（半边户）</h3>
+                <div class="input-group">
+                    <label for="mixedN">家庭人口数：</label>
+                    <input type="number" id="mixedN" min="0" value="0">
+                </div>
+
+                <div class="input-group" >
+                    <label for="mixedM">增计人数：</label>
+                    <input type="number" id="mixedM" min="0" value="0">
+                </div>
+                
+                <div class="input-group">
+                    <label for="mixedP">其中非农人数（夫妻一方）：</label>
+                    <input type="number" id="mixedP" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label for="mixedS">合法住宅建筑占地面积：</label>
+                    <input type="number" id="mixedS" min="0" value="0">
+                    <span class="warning">（如超过140㎡按140㎡计算）</span>
+                </div>
+            </div>
+
+            <!-- 居民输入 -->
+            <div id="residentInput" class="hidden">
+                <h3>家庭信息（全居户）</h3>
+                <div class="input-group">
+                    <label for="residentN">家庭人口数：</label>
+                    <input type="number" id="residentN" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label for="residentS">合法住宅建筑占地面积：</label>
+                    <input type="number" id="residentS" min="0" value="0">
+                    <span class="warning">（如超过126㎡按126㎡计算）</span>
+                </div>
+            </div>
+            <button class="submit-btn" onclick="calculateSchemes()">生成置换方案</button>
+        </div>
+
+        <!-- 第二步：置换方案 -->
+        <div id="outputSection" class="hidden step-section">
+            <h2>第二步：置换方案</h2>
+            <div id="schemeResult"></div>
+        </div>
+
+        <!-- 第三步：垂直房选择 -->
+        <div id="thirdStep" class="hidden step-section">
+            <h2>第三步：选择垂直房</h2>
+            <div id="residentVertical" class="hidden">
+                <div class="input-group">
+                    <label>选择户型：</label>
+                    <select id="residentHouseType">
+                        <option value="1">30㎡（4层半，217.5万/间）</option>
+                        <option value="2">40㎡（5层半，366.12万/间）</option>
+                        <option value="3">40㎡（7层半，488.16万/间）</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>输入间数：</label>
+                    <input type="number" id="residentRooms" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label>自留高层面积（㎡）：</label>
+                    <input type="number" id="residentS3" min="0" value="0">
+                </div>
+            </div>
+
+            <div id="nonResidentVertical" class="hidden">
+                <div class="input-group">
+                    <label>最小自留面积：<span id="zsValue"></span>㎡</label>
+                </div>
+                <div class="input-group">
+                    <label>选择户型：</label>
+                    <select id="houseType">
+                        <option value="1">30㎡（4层半，217.5万/间）</option>
+                        <option value="2">40㎡（5层半，366.12万/间）</option>
+                        <option value="3">40㎡（7层半，488.16万/间）</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>输入间数：</label>
+                    <input type="number" id="rooms" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label>自留高层面积：</label>
+                    <input type="number" id="s3" min="0" value="0">
+                </div>
+            </div>
+
+           
+            <!-- 新增价格输入区域 -->
+            <div class="input-group">
+                <label>安置优惠价（元/㎡）（仅用于测算）：</label>
+                <input type="number" id="preferentialPrice" min="0" value="3200">
+            </div>
+            <div class="input-group">
+                <label>安置指导价（元/㎡）（仅用于测算）：</label>
+                <input type="number" id="basePrice" min="0" value="4000">
+            </div>
+
+            <button class="submit-btn" onclick="calculateFinal()">计算最终方案</button>
+            <div id="finalResult" class="output-box hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = {
+            type: '',
+            N: 0, M: 0, P: 0, S: 0,
+            scheme: null,
+            S1: 0, Q1: 0, S2: 0, Q2: 0
+        };
+
+        // 第一步：更新输入界面
+        function updateInputFields() {
+            const type = document.getElementById('familyType').value;
+            currentData.type = type;
+            
+            document.getElementById('villagerInput').classList.add('hidden');
+            document.getElementById('mixedInput').classList.add('hidden');
+            document.getElementById('residentInput').classList.add('hidden');
+            document.getElementById('outputSection').classList.add('hidden');
+            document.getElementById('thirdStep').classList.add('hidden');
+            document.getElementById('finalResult').classList.add('hidden');
+            
+            if (type === 'villager') {
+                document.getElementById('villagerInput').classList.remove('hidden');
+            } else if (type === 'mixed') {
+                document.getElementById('mixedInput').classList.remove('hidden');
+            } else if (type === 'resident') {
+                document.getElementById('residentInput').classList.remove('hidden');
+            }
+             console.log("当前家庭类型：", type); // 调试信息
+        }
+
+
+        // 第二步：生成置换方案
+        function calculateSchemes() {
+              // 重置第三步界面和输入
+            document.getElementById('thirdStep').classList.add('hidden');
+            document.getElementById('finalResult').classList.add('hidden');
+            
+            // 重置居民类型输入
+            document.getElementById('residentRooms').value = 0;
+            document.getElementById('residentS3').value = 0;
+            
+            // 重置非居民类型输入
+            document.getElementById('rooms').value = 0;
+            document.getElementById('s3').value = 0;
+            const type = currentData.type;
+            if (!type) {
+                alert("请先选择家庭类型！");
+                return;
+            }
+
+            let N, M, P, S;
+            if (type === 'villager') {
+                N = parseInt(document.getElementById('villagerN').value) || 0;
+                M = parseInt(document.getElementById('villagerM').value) || 0;
+                S = Math.min(parseInt(document.getElementById('villagerS').value) || 0, 140);
+            } else if (type === 'mixed') {
+                N = parseInt(document.getElementById('mixedN').value) || 0;
+                M = parseInt(document.getElementById('mixedM').value) || 0;
+                P = parseInt(document.getElementById('mixedP').value) || 0;
+                S = Math.min(parseInt(document.getElementById('mixedS').value) || 0, 140);
+            } else if (type === 'resident') {
+                N = parseInt(document.getElementById('residentN').value) || 0;
+                S = Math.min(parseInt(document.getElementById('residentS').value) || 0, 126);
+            }
+
+            currentData = {...currentData, N, M, P, S};
+
+            let html = '<div class="output-box">';
+            html += '<h3>置换方案</h3>';
+
+            // 方案1：按建筑面积
+            const scheme1Area = 3 * S;
+            const scheme1ValueHigh = 9500 * scheme1Area;
+            const scheme1AreaIndustry = 2 * S;
+            const scheme1ValueIndustry = 1800 * scheme1AreaIndustry;
+
+            html += `
+                <div class="scheme-option">
+                    <h4>方案（1）按住宅建筑占地面积</h4>
+                    <p>高层公寓面积：${scheme1Area}㎡</p>
+                    <p>高层权益价值：￥${scheme1ValueHigh.toLocaleString()}</p>
+                    <p>产业用房面积：${scheme1AreaIndustry}㎡</p>
+                    <p>产业权益价值：￥${scheme1ValueIndustry.toLocaleString()}</p>
+                    <button onclick="selectScheme(1)">选择方案（1）</button>
+                </div>
+            `;
+
+            // 方案2：按人员基数（仅非居民）
+            if (type !== 'resident') {
+                let scheme2AreaHigh, scheme2AreaIndustry;
+                if (type === 'villager') {
+                    scheme2AreaHigh = 105 * (M + N);
+                    scheme2AreaIndustry = 70 * (M + N);
+                } else {
+                    scheme2AreaHigh = 105 * (M + N) - 35 * P;
+                    scheme2AreaIndustry = 70 * (M + N - P);
+                }
+                scheme2AreaHigh = Math.max(scheme2AreaHigh, 0);
+                scheme2AreaIndustry = Math.max(scheme2AreaIndustry, 0);
+                
+                const scheme2ValueHigh = 9500 * scheme2AreaHigh;
+                const scheme2ValueIndustry = 1800 * scheme2AreaIndustry;
+
+                html += `
+                    <div class="scheme-option">
+                        <h4>方案（2）按人员基数</h4>
+                        <p>高层公寓面积：${scheme2AreaHigh}㎡</p>
+                        <p>高层权益价值：￥${scheme2ValueHigh.toLocaleString()}</p>
+                        <p>产业用房面积：${scheme2AreaIndustry}㎡</p>
+                        <p>产业权益价值：￥${scheme2ValueIndustry.toLocaleString()}</p>
+                        <button onclick="selectScheme(2)">选择方案（2）</button>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            document.getElementById('schemeResult').innerHTML = html;
+            document.getElementById('outputSection').classList.remove('hidden');
+                console.log("生成的置换方案：", html); // 调试信息
+        }
+
+
+        // 选择方案
+        function selectScheme(schemeNumber) {
+            if (currentData.type === 'resident' && schemeNumber !== 1) {
+                alert("居民类型只能选择方案（1）！");
+                return;
+            }
+
+            const schemes = document.querySelectorAll('.scheme-option');
+            const schemeDiv = schemes[schemeNumber - 1];
+            const values = schemeDiv.querySelectorAll('p');
+
+            currentData.scheme = schemeNumber;
+            currentData.S1 = parseInt(values[0].textContent.match(/\d+/)[0]);
+            currentData.Q1 = parseInt(values[1].textContent.replace(/[^0-9]/g, ''));
+            currentData.S2 = parseInt(values[2].textContent.match(/\d+/)[0]);
+            currentData.Q2 = parseInt(values[3].textContent.replace(/[^0-9]/g, ''));
+
+            document.getElementById('thirdStep').classList.remove('hidden');
+            if (currentData.type === 'resident') {
+                document.getElementById('residentVertical').classList.remove('hidden');
+                document.getElementById('nonResidentVertical').classList.add('hidden');
+            } else {
+                document.getElementById('nonResidentVertical').classList.remove('hidden');
+                document.getElementById('residentVertical').classList.add('hidden');
+                
+                //定义ZS
+                let ZS = 0;
+                if (currentData.type === 'villager') {
+                    ZS = 30 * currentData.N;
+                } else if (currentData.type === 'mixed') {
+                    ZS = 30 * (currentData.N - currentData.P);
+                    ZS = Math.max(ZS, 0); // 防止人数为负
+                }
+                document.getElementById('zsValue').textContent = ZS;
+                document.getElementById('s3').min = ZS;
+            }
+
+            document.getElementById('preferentialPrice').closest('.input-group').classList.remove('hidden');
+            document.getElementById('basePrice').closest('.input-group').classList.remove('hidden');
+        }
+
+        // 第三步：最终计算
+        function calculateFinal() {
+    let J = 0, GF = 0, GC = 0, houseType, rooms, S3;
+
+    if (currentData.type === 'resident') {
+        houseType = document.getElementById('residentHouseType').value;
+        rooms = parseInt(document.getElementById('residentRooms').value) || 0;
+        S3 = parseInt(document.getElementById('residentS3').value) || 0;
+    } else {
+        houseType = document.getElementById('houseType').value;
+        rooms = parseInt(document.getElementById('rooms').value) || 0;
+        S3 = parseInt(document.getElementById('s3').value) || 0;
+        const zsMin = parseInt(document.getElementById('s3').min);
+        if (S3 < zsMin) {
+            alert("自留高层住宅建筑面积最少不低于人均30平米，请重新输入！");
+            document.getElementById('s3').value = zsMin;
+            S3 = zsMin;
+        }
+    }
+
+    switch(houseType) {
+        case '1': J = 217.5 * rooms * 10000; break;
+        case '2': J = 366.12 * rooms * 10000; break;
+        case '3': J = 488.16 * rooms * 10000; break;
+    }
+
+    GF = 9500 * 1.05 * (currentData.S1 - S3);
+
+    const preferentialPrice = parseInt(document.getElementById('preferentialPrice').value) || 0;
+    const basePrice = parseInt(document.getElementById('basePrice').value) || 0;
+
+    switch(currentData.type) {
+        case 'villager': {
+            const maxPreferential = currentData.N * 30;
+            GC = S3 > maxPreferential
+                ? preferentialPrice * maxPreferential + basePrice * (S3 - maxPreferential)
+                : preferentialPrice * S3;
+            break;
+        }
+        case 'mixed': {
+            const validN = currentData.N - currentData.P;
+            const mixedMax = validN * 30;
+            GC = S3 > mixedMax
+                ? preferentialPrice * mixedMax + basePrice * (S3 - mixedMax)
+                : preferentialPrice * S3;
+            break;
+        }
+        case 'resident': {
+            GC = basePrice * S3;
+            break;
+        }
+    }
+
+    let threshold = (currentData.type === 'resident') ? 0.68 : (currentData.scheme === 1 ? 0.68 : 0.6);
+
+    let html = `<h3>最终置换方案</h3>`;
+    html += `<p>高层权益面积：${currentData.S1}㎡</p>`;
+    html += `<p>自留高层面积：${S3}㎡</p>`;
+    html += `<p>购房凭证价值：<span class="green">￥${GF.toLocaleString()}</span></p>`;
+
+    if (GF > J * threshold) {
+        const diff = J - GF;
+        html += `<p>垂直房价格：<span class="red">￥${J.toLocaleString()}</span></p>`;
+        html += diff > 0
+            ? `<p>需支付现金尾款：<span class="red">￥${diff.toLocaleString()}</span></p>`
+            : `<p>多余的权益证价值：<span class="green">￥${(-diff).toLocaleString()}</span></p>`;
+    } else {
+        const requiredArea = ((J * threshold - GF) / (9500 * 1.05)).toFixed(2);
+        const cashPayment = J * (1 - threshold);
+        html += `<p>需市场调剂面积：<span class="red">${requiredArea}㎡</span></p>`;
+        html += `<p>还需现金支付：<span class="red">￥${cashPayment.toLocaleString()}</span></p>`;
+    }
+
+    let parkingHtml = '';
+    let showParking = true;
+    if (currentData.type === 'resident' && S3 === 0) {
+        parkingHtml = `<p>车位：<span class="green">不留高层，无需车位</span></p>`;
+        showParking = false;
+    }
+
+    html += `<hr><p>产业用房权益面积：${currentData.S2}㎡</p>`;
+    html += `<p>货币补偿款：<span class="green">￥${currentData.Q2.toLocaleString()}</span></p>`;
+    html += `<p>高层购房款：<span class="red">￥${GC.toLocaleString()}</span></p>`;
+    html += showParking ? `<p>车位（默认1个）：<span class="red">￥100,000</span></p>` : parkingHtml;
+
+    const balance = showParking ? (currentData.Q2 - GC - 100000) : (currentData.Q2 - GC);
+    if (balance >= 0) {
+        html += `<p>余额退回：<span class="green">￥${balance.toLocaleString()}</span></p>`;
+    } else {
+        html += `<p>还需支付：<span class="red">￥${Math.abs(balance).toLocaleString()}</span></p>`;
+    }
+
+    document.getElementById('finalResult').innerHTML = html;
+    document.getElementById('finalResult').classList.remove('hidden');
+}
+
+    </script>
+</body>
+</html>
