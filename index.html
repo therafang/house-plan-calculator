@@ -461,7 +461,7 @@ h2 {
 
     if (GF > J * threshold) {
         const diff = J - GF;
-        html += `<p>垂直房价格：<span class="red">￥${J.toLocaleString()}</span></p>`;
+        html += `<p>垂直房价格(按均价)：<span class="red">￥${J.toLocaleString()}</span></p>`;
         html += diff > 0
             ? `<p>需支付现金尾款：<span class="red">￥${diff.toLocaleString()}</span></p>`
             : `<p>多余的权益证价值：<span class="green">￥${(-diff).toLocaleString()}</span></p>`;
@@ -499,7 +499,7 @@ h2 {
     </script>
 
 <footer style="text-align:center; color:#888; font-size:14px; margin-top:40px;">
-  垂直房置换模拟器 · v1.2<br>
+  垂直房置换模拟器 · v1.3<br>
   &copy; 2025 therafang 版权所有
 </footer>
 
